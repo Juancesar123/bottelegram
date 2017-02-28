@@ -1,0 +1,117 @@
+<html ng-app="mainApp">
+<head>
+<link rel="stylesheet" href="bootstrap-4.0.0-alpha.6-dist/css/bootstrap.min.css">
+<script src="angular.min.js"></script>
+<script>
+var app = angular.module("mainApp",[]);
+app.controller("appctrl",function($scope,$http){
+    $scope.getdata = function(){
+        $http.get("api/databot").success(function(data){
+            $scope.databot = data;
+        });
+    }
+    $scope.simpan = function(){
+        var id = $scope.id;
+        alert(id);
+        var title = $scope.title;
+        var description = $scope.description;
+        var message = $scope.message
+         $http.post("api/databot",{id:id,title:title,description:description,message:message}).success(function(){
+            alert("data sukses di input");
+            $scope.getdata();
+        });
+    }
+    $scope.edit = function(item){
+        $scope.id = item.id;
+        $scope.title = item.title;
+        $scope.message = item.description;
+        $scope._id = item._id;
+    }
+    $scope.actionedit = function(){
+        var idinput = $scope.id;
+        var id = $scope._id;
+        var title = $scope.title;
+        var description = $scope.message;
+        $http.put("api/databot",{id:id,title:title,description:description,idinput:idinput,message:message}).success(function(){
+            $scope.getdata(); 
+        })
+    }
+    $scope.hapus = function(item){
+        var id = item._id;
+        $http.delete("api/databot/"+id).success(function(){
+            $scope.getdata();
+        })
+    }
+    $scope.lihat = function(){
+        $scope.status = true
+    }
+    $scope.getdata();
+})
+</script>
+</head>
+<body ng-controller="appctrl">
+<!-- Modal -->
+<div id="myModal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">edit data</h4>
+      </div>
+      <div class="modal-body">
+       <div class="form-control">
+            <label> ID </label>
+            <input type="text" class="form-control" ng-model="id">
+            <label> Title </label>
+            <input type="text" class="form-control" ng-model="title">
+            <label> Message </label>
+            <textarea class="form-control" ng-model="message"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+      <button type="button" class="btn btn-success" ng-click="actionedit()">Submit</button>
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+    <div class="container">
+    <center>Meta Data Kata Romantis BOT Gombalan</center>
+        <div class="form-control">
+            <label> ID </label>
+            <input type="text" class="form-control" ng-model="id">
+            <label> Title </label>
+            <input type="text" class="form-control" ng-model="title">
+            <label> Description </label>
+            <textarea class="form-control" ng-model="description"></textarea>
+            <label> Message </label>
+            <textarea class="form-control" ng-model="message"></textarea>
+        </div>
+        <button class="btn btn-primary" ng-click="simpan()">Save</button>
+         <button class="btn btn-warning" ng-click="lihat()">Lihat</button>
+        <table class="table">
+            <thead>
+            <th>ID</th>
+            <th>Title</th>
+            <th>Message</th>
+            </thead>
+            <tbody>
+            <tr ng-repeat="item in databot|filter:cari">
+                <td>{{item.id}}</td>
+                <td>{{item.title}}</td>
+                <td>{{item.description}}</td>
+                <td>{{item.message}}</td>
+                <td><button class="btn btn-success" ng-click="edit(item)" data-target="#myModal" data-toggle="modal">Edit</button><button class="btn btn-danger" ng-click="hapus(item)">Hapus</button></td>
+            </tr>
+        </table>
+    </div>
+    <script
+  src="https://code.jquery.com/jquery-3.1.1.js"
+  integrity="sha256-16cdPddA6VdVInumRGo6IbivbERE8p7CQR3HzTBuELA="
+  crossorigin="anonymous"></script>
+  <script src="bootstrap-4.0.0-alpha.6-dist/js/bootstrap.min.js"></script>
+</body>
+</html>
