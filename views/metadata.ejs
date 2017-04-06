@@ -31,7 +31,8 @@ app.controller("appctrl",function($scope,$http){
         var idinput = $scope.id;
         var id = $scope._id;
         var title = $scope.title;
-        var description = $scope.message;
+        var description = $scope.description;
+          var message = $scope.message
         $http.put("api/databot",{id:id,title:title,description:description,idinput:idinput,message:message}).success(function(){
             $scope.getdata(); 
         })

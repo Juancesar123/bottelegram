@@ -5,8 +5,10 @@ var CronJob = require('cron').CronJob;
 var bodyParser     = require('body-parser');
 const TelegramBot = require('node-telegram-bot-api');
 var mongoose = require('mongoose');
+var natural = require('natural');
+const {Wit, log} = require('node-wit');
 // replace the value below with the Telegram token you receive from @BotFather
-const token = 'gi';
+const token = '<YOUR-Token-Telegram-HERE>';
 mongoose.connect('mongodb://localhost/bottelegram');
 var Promise = require('mpromise');
 var helmet = require('helmet')
@@ -22,6 +24,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 mongoose.Promise = global.Promise
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, {polling: true});
+//ini adalah model untuk membuat kata romantis
 var METAinlinebot = mongoose.model('metainlinebot', {
     type : {type : String, default:'article'},
     id : {type:String},
@@ -31,8 +34,7 @@ var METAinlinebot = mongoose.model('metainlinebot', {
     created_at : {type : Date, default: Date.now}
 });
 var metapernyataan = mongoose.model('metapernyataan',{
-    pernyataan :{type:String,default:''},
-    balasan : {type:String,default:''}
+    jawaban :{type:String,default:''}
 })
 // Matches "/echo [whatever]"
 bot.onText(/\/jomblo/,(msg, match) => {
@@ -104,11 +106,13 @@ app.post("/api/databot",function(req,res){
     	      res.end()
  	     });
 });
+
 app.get("/api/databot",function(req,res){
   METAinlinebot.find().exec().then(function(docs){
        res.json(docs);
     });
 });
+
 app.put("/api/databot",function(req,res){
         var title = req.body.title;
         var description = req.body.description;
@@ -118,39 +122,66 @@ app.put("/api/databot",function(req,res){
             res.end()
         });
 })
+
 app.delete("/api/databot/:id",function(req,res){
   var id = req.params.id;
   METAinlinebot.remove({_id:id},function(err,docs){
         res.end();
     });
 })
+
 app.get("/pernyataan",function(req,res){
     res.render("pernyataan.ejs");
 })
 bot.on("inline_query", (query) => {
 METAinlinebot.find().exec().then(function(docs){
-  console.log(docs);
+  if(docs==null){
+    bot.answerCallbackQuery(query.id, "maaf kata romantis tidak di temukan") 
+  }else{
     bot.answerInlineQuery(query.id, docs);
+  }
   })
 });
+const client = new Wit({accessToken: '<YOUR-WIT.AI-TOKEN-ACEESS>'});
 bot.on('message', (msg) => {
-    const chatId = msg.chat.id;
-    const nama = msg.chat.first_name;
-  metapernyataan.find({pernyataan:msg.text},function(docs){
-    console.log(docs)
-      // if(docs == null){
-      //     bot.sendMessage(chatId,"sebentar saya catat dulu kata tersebut");
-      //     var metapernyataanbot = new metapernyataan();
-      //     metapernyataanbot.pernyataan = msg.text;
-		  //     metapernyataanbot.save(function(){
+const chatId = msg.chat.id;  
+client.message(msg.text, {})
+.then((data) => {
+  var arrayjson = JSON.stringify(data.entities.intent);
+  //var json = JSON.parse(arrayjson);
+  console.log(arrayjson);
+  if (arrayjson == undefined){
+    bot.sendMessage(chatId,"maaf saya tidak mengerti kata tersebut");
+  }else{
+      var jawaban = JSON.stringify(data.entities.intent[0].value);
+ // console.log(JSON.parse(jawaban));
+    bot.sendMessage(chatId,JSON.parse(jawaban));
+ }
+  
+})
+.catch(console.error);
+  //   const nama = msg.chat.first_name;
+  // const tokenizer = new natural.WordTokenizer();
+  // const array = tokenizer.tokenize(msg.text);
+  // var items = [];
+  // metapernyataan.find({jawaban:{$in:array}}).exec().then(function(docs){
+  //    // console.log(docs)
+  //      if(docs == null){
+  //         bot.sendMessage(chatId,"sebentar saya catat dulu kata tersebut");
+  //     //     var metapernyataanbot = new metapernyataan();
+  //     //     metapernyataanbot.jawaban = msg.text;
+	// 	  //     metapernyataanbot.save(function(){
     	        
- 	    //  });  
-      // }else{
-      //     bot.sendMessage(chatId,docs.balasan);
-      // }
-  })
+ 	//     //  });  
+  //     }else{
+  //       items[docs.jawaban]
+  //       //var item = items[Math.floor(Math.random()*docs.length)];
+  //       console.log(docs);
+  //         //bot.sendMessage(chatId,docs.jawaban);
+  //     }
+  // })
 });
  bot.onReplyToMessage("reply_message_to",function(msg){
     bot.sendMessage(chatId,"Hello "+nama+" ada apa?")
 });
-http.listen('3000');
+http.listen('80');
