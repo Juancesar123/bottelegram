@@ -18,6 +18,7 @@
     "ejs": "^2.5.6",
     "express": "^4.14.1",
     "helmet": "^3.4.1",
+    "mongoose": "^4.9.3",
     "mpromise": "^0.5.5",
     "multer": "^1.3.0",
     "natural": "^0.5.0",
